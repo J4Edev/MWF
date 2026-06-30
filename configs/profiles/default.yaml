@@ -1,0 +1,14 @@
+name: default
+description: Basic safe system baseline
+
+actions:
+  - type: power_plan
+    value: balanced
+
+  - type: startup_remove
+    target:
+      - OneDrive
+      - Teams
+
+  - type: windows_setting
+    value: basic_visuals

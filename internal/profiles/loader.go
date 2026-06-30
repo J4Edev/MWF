@@ -7,24 +7,18 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type Profile struct {
-	Name        string `yaml:"name"`
-	Description string `yaml:"description"`
-}
-
-func LoadProfile(name string) (*Profile, error) {
+func Load(name string) (*Profile, error) {
 	if name != "default" {
-		return nil, fmt.Errorf("profile not found: %s", name)
+		return nil, fmt.Errorf("only default profile exists in v0.2")
 	}
 
-	data, err := os.ReadFile("internal/profiles/default.yaml")
+	data, err := os.ReadFile("configs/profiles/default.yaml")
 	if err != nil {
 		return nil, err
 	}
 
 	var p Profile
-	err = yaml.Unmarshal(data, &p)
-	if err != nil {
+	if err := yaml.Unmarshal(data, &p); err != nil {
 		return nil, err
 	}
 
