@@ -1,0 +1,6 @@
+name: default
+description: Safe baseline configuration
+
+actions:
+  - type: info
+    message: "No system changes in v0.1 baseline"
