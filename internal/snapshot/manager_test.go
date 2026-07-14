@@ -1,0 +1,4 @@
+package snapshot
+import("testing";"MWF/internal/actions")
+func TestSnapshotSerialization(t *testing.T){m:=New(t.TempDir());id,err:=m.Create(t.Context(),"test",[]actions.Action{},Systems{});if err!=nil{t.Fatal(err)};meta,state,err:=m.Load(id);if err!=nil{t.Fatal(err)};if meta.ID!=id||meta.Profile!="test"||len(state.Records)!=0{t.Fatalf("unexpected snapshot: %#v %#v",meta,state)}}
+func TestReverseRegistrySetWithoutPreviousValue(t *testing.T){m:=New(t.TempDir());id,err:=m.Create(t.Context(),"test",[]actions.Action{},Systems{});if err!=nil{t.Fatal(err)};_,state,err:=m.Load(id);if err!=nil{t.Fatal(err)};state.Records=[]Record{{Action:actions.Action{Type:actions.RegistrySet,Key:`HKCU\Software\MWF`,Name:"A"},Reversible:true}};if err=write(m.Root+"/"+id+"/state.json",state);err!=nil{t.Fatal(err)};_,got,err:=m.Reverse(id);if err!=nil||len(got)!=1||got[0].Type!=actions.RegistryDelete{t.Fatalf("got %#v, %v",got,err)}}

@@ -1,10 +1,12 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 
 	"MWF/internal/engine"
 	"MWF/internal/profiles"
+	"MWF/internal/snapshot"
 
 	"github.com/spf13/cobra"
 )
@@ -26,7 +28,9 @@ var applyCmd = &cobra.Command{
 
 		executor := engine.NewExecutor(dryRun)
 
-		engine.RunPipeline(p, executor)
+		if _, err := engine.RunPipeline(context.Background(), p, executor, snapshot.New("")); err != nil {
+			fmt.Println("error:", err)
+		}
 	},
 }
 

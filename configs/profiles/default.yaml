@@ -12,3 +12,4 @@ actions:
 
   - type: windows_setting
     value: basic_visuals
+    risk: low

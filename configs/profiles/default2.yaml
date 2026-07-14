@@ -1,0 +1,25 @@
+name: default2
+
+description: >
+  Safe baseline Windows configuration profile focused on
+  balanced performance and usability.
+
+risk:
+  level: low
+
+actions:
+
+  - type: power_plan
+    value: balanced
+    risk: low
+
+  - type: startup_remove
+    target:
+      - Teams
+    risk: low
+
+  - type: windows_setting
+    target:
+      - visual_effects
+    value: default
+    risk: low
