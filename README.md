@@ -8,9 +8,9 @@ It is designed as a deterministic, safety-first execution framework for Windows 
 
 ---
 
-# 🚀 Current Version: v0.3 — Stateful System Management Foundation
+# 🚀 Current Version: v0.3.1
 
-MWF v0.3 introduces the foundation required for a real Windows management framework.
+MWF v0.3.
 
 This version focuses on:
 
@@ -92,6 +92,30 @@ Current action categories:
 - Snapshot creation before changes
 - Restore through reverse actions
 - No hidden system modifications
+
+---
+
+### Antiware
+
+Antiware prevents Windows from automatically installing OEM companion software for newly connected devices where supported.
+
+Examples include:
+
+- Razer Synapse
+- LG Monitor App
+- Logitech Options+
+- Dell SupportAssist
+- HP Smart
+- Lenovo Vantage
+- Other OEM companion applications delivered automatically by Windows
+
+Antiware is designed to:
+
+- Prevent unwanted OEM companion software
+- Preserve normal driver installation
+- Allow manual installation of vendor software when desired
+
+> **Note:** Antiware targets automatic companion software installation only. It does **not** block drivers, Windows Update, or manually installed applications.
 
 ---
 
@@ -222,6 +246,19 @@ mwf restore <snapshot-id>
 ```
 
 Restoration works by generating reverse actions and sending them through the normal execution pipeline.
+
+---
+
+## Antiware
+
+```bash
+mwf antiware <enable, disable, status>
+```
+
+
+Automatic OEM companion software installation is blocked.
+
+Drivers will continue to install normally.
 
 ---
 

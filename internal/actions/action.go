@@ -3,18 +3,19 @@
 package actions
 
 import (
- "fmt"
- "strings"
+	"fmt"
+	"strings"
 )
 
 type Type string
 
 const (
-	RegistrySet     Type = "registry_set"
-	RegistryDelete  Type = "registry_delete"
-	PowerPlan       Type = "power_plan"
-	StartupRemove   Type = "startup_remove"
-	WindowsSetting  Type = "windows_setting"
+	RegistrySet      Type = "registry_set"
+	RegistrySetDWORD Type = "registry_set_dword"
+	RegistryDelete   Type = "registry_delete"
+	PowerPlan        Type = "power_plan"
+	StartupRemove    Type = "startup_remove"
+	WindowsSetting   Type = "windows_setting"
 )
 
 type Risk string
@@ -38,12 +39,16 @@ type Action struct {
 }
 
 func (a Action) String() string {
-	if a.Key != "" { return fmt.Sprintf("%s %s/%s", a.Type, a.Key, a.Name) }
+	if a.Key != "" {
+		return fmt.Sprintf("%s %s/%s", a.Type, a.Key, a.Name)
+	}
 	return fmt.Sprintf("%s %s", a.Type, a.Value)
 }
 
 func (a Action) EffectiveRisk() Risk {
-	if a.Risk != "" { return a.Risk }
+	if a.Risk != "" {
+		return a.Risk
+	}
 	switch a.Type {
 	case RegistryDelete, StartupRemove:
 		return RiskMedium
@@ -52,4 +57,6 @@ func (a Action) EffectiveRisk() Risk {
 	}
 }
 
-func (a Action) ValidRegistryKey() bool { return strings.Contains(a.Key, `\`) && (strings.HasPrefix(strings.ToUpper(a.Key), `HKCU\`) || strings.HasPrefix(strings.ToUpper(a.Key), `HKLM\`) || strings.HasPrefix(strings.ToUpper(a.Key), `HKEY_CURRENT_USER\`) || strings.HasPrefix(strings.ToUpper(a.Key), `HKEY_LOCAL_MACHINE\`)) }
+func (a Action) ValidRegistryKey() bool {
+	return strings.Contains(a.Key, `\`) && (strings.HasPrefix(strings.ToUpper(a.Key), `HKCU\`) || strings.HasPrefix(strings.ToUpper(a.Key), `HKLM\`) || strings.HasPrefix(strings.ToUpper(a.Key), `HKEY_CURRENT_USER\`) || strings.HasPrefix(strings.ToUpper(a.Key), `HKEY_LOCAL_MACHINE\`))
+}
