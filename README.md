@@ -8,7 +8,7 @@ It is designed as a deterministic, safety-first execution framework for Windows 
 
 ---
 
-# 🚀 Current Version: v0.3.1
+# 🚀 Current Version: v0.3.2A
 
 MWF v0.3.
 
