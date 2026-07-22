@@ -1,96 +1,141 @@
-# MWF v0.3 Installer
-# Installs mwf.exe for the current Windows user
+# MWF Installer
+# Downloads latest release from GitHub
 
 $ErrorActionPreference = "Stop"
 
-$AppName = "MWF"
+$Repo = "J4Edev/MWF"
 $InstallDir = "$env:LOCALAPPDATA\Programs\MWF"
 
 Write-Host ""
-Write-Host "================================"
-Write-Host " MWF Windows Management Framework"
-Write-Host " Installer v0.3"
-Write-Host "================================"
+Write-Host "=============================="
+Write-Host " MWF Installer"
+Write-Host "=============================="
 Write-Host ""
 
-# Locate binary
-$SourceBinary = Join-Path $PSScriptRoot "..\dist\mwf.exe"
+function Get-LatestRelease {
 
-if (!(Test-Path $SourceBinary)) {
-    Write-Host "ERROR: mwf.exe not found"
-    Write-Host "Expected location:"
-    Write-Host $SourceBinary
+    $api = "https://api.github.com/repos/$Repo/releases/latest"
+
+    Invoke-RestMethod `
+        -Uri $api `
+        -Headers @{
+            "User-Agent"="MWF-Installer"
+        }
+}
+
+
+Write-Host "[1/5] Checking latest release..."
+
+$release = Get-LatestRelease
+
+$version = $release.tag_name
+
+Write-Host "Latest version:"
+Write-Host $version
+
+
+$exeAsset = $release.assets |
+    Where-Object {
+        $_.name -eq "mwf.exe"
+    }
+
+$checksumAsset = $release.assets |
+    Where-Object {
+        $_.name -eq "checksums.txt"
+    }
+
+
+if (!$exeAsset -or !$checksumAsset) {
+
+    Write-Host "Release missing required files."
     exit 1
 }
 
-# Create install directory
-Write-Host "[1/4] Creating install directory..."
 
-if (!(Test-Path $InstallDir)) {
-    New-Item -ItemType Directory -Path $InstallDir | Out-Null
+$temp = Join-Path $env:TEMP "mwf-install"
+
+New-Item `
+    -ItemType Directory `
+    -Force `
+    -Path $temp | Out-Null
+
+
+$exePath = "$temp\mwf.exe"
+$checksumPath = "$temp\checksums.txt"
+
+
+Write-Host "[2/5] Downloading MWF..."
+
+Invoke-WebRequest `
+    $exeAsset.browser_download_url `
+    -OutFile $exePath
+
+
+Invoke-WebRequest `
+    $checksumAsset.browser_download_url `
+    -OutFile $checksumPath
+
+
+Write-Host "[3/5] Verifying SHA256..."
+
+$expected = (
+    Get-Content $checksumPath |
+    Select-String "mwf.exe"
+).ToString().Split()[0]
+
+
+$actual = (
+    Get-FileHash `
+        $exePath `
+        -Algorithm SHA256
+).Hash.ToLower()
+
+
+if ($expected -ne $actual) {
+
+    Write-Host "Checksum verification failed!"
+    exit 1
 }
 
 
-# Copy executable
-Write-Host "[2/4] Installing MWF..."
+Write-Host "Checksum verified."
+
+
+Write-Host "[4/5] Installing..."
+
+New-Item `
+    -ItemType Directory `
+    -Force `
+    -Path $InstallDir | Out-Null
+
 
 Copy-Item `
-    -Path $SourceBinary `
-    -Destination "$InstallDir\mwf.exe" `
+    $exePath `
+    "$InstallDir\mwf.exe" `
     -Force
 
 
-# Add to PATH
-Write-Host "[3/4] Updating user PATH..."
+Write-Host "[5/5] Updating PATH..."
 
 $userPath = [Environment]::GetEnvironmentVariable(
     "Path",
     "User"
 )
 
-if ($userPath -notlike "*$InstallDir*") {
 
-    if ([string]::IsNullOrEmpty($userPath)) {
-        $newPath = $InstallDir
-    }
-    else {
-        $newPath = "$userPath;$InstallDir"
-    }
+if ($userPath -notlike "*$InstallDir*") {
 
     [Environment]::SetEnvironmentVariable(
         "Path",
-        $newPath,
+        "$userPath;$InstallDir",
         "User"
     )
-
-    Write-Host "Added MWF to PATH"
-}
-else {
-    Write-Host "MWF already exists in PATH"
 }
 
 
-# Verify installation
-Write-Host "[4/4] Verifying installation..."
-
-if (Test-Path "$InstallDir\mwf.exe") {
-
-    Write-Host ""
-    Write-Host "Installation complete!"
-    Write-Host ""
-
-    Write-Host "Installed:"
-    Write-Host "$InstallDir\mwf.exe"
-
-    Write-Host ""
-    Write-Host "Restart PowerShell, then run:"
-    Write-Host ""
-    Write-Host "  mwf --help"
-    Write-Host ""
-
-}
-else {
-
-    Write-Host "Installation failed"
-    exit 1
-}
+Write-Host ""
+Write-Host "MWF installed successfully."
+Write-Host ""
+Write-Host "Restart PowerShell and run:"
+Write-Host ""
+Write-Host "mwf --help"
